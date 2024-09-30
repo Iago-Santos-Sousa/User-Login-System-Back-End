@@ -56,8 +56,8 @@ A estrutura do back-end segue o padrão MVC.
 3. Execute a aplicação:
    npm run dev
 
-### 💡 Futuras Implementações:
+## 💡 Futuras Implementações:
 - Login com Google: Planejamos integrar a autenticação via Google para proporcionar uma experiência de login ainda mais conveniente para os usuários.
 
-### 📊 Status do projeto:
+## 📊 Status do projeto:
 - Em andamento
