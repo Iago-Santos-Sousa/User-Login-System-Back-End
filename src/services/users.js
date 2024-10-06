@@ -103,11 +103,8 @@ const resetPassword = async (req, res) => {
   }
 };
 
-const uploadImgUser = async (img) => {};
-
 module.exports = {
   createUser,
-  uploadImgUser,
   forgotPasswordEmail,
   resetPassword,
 };
