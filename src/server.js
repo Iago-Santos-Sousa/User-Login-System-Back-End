@@ -16,6 +16,6 @@ app.use(cors(corsOptions));
 // rotas da aplicação
 app.use("/api", routes);
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log(`Server is running at port: ${process.env.PORT || 3000}`);
+app.listen(process.env.APP_PORT || 3000, () => {
+  console.log(`Server is running at port: ${process.env.APP_PORT || 3000}`);
 });
