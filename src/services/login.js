@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const UserModel = require("../models/Users");
+const HttpResponse = require("../utils/HttpResponse");
 
 const generateAcessToken = (payload) => {
   const acessToken = jwt.sign(payload, process.env.JWT_SECRET, {
@@ -23,23 +24,18 @@ const generateRefreshToken = async (payload) => {
   }
 };
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      res
-        .status(400)
-        .json({ status: "error", message: "Informe todas as credenciais!" });
+      throw HttpResponse.badRequest("Informe todas as credenciais!");
     }
 
     const user = await UserModel.getUserEmailAndPassword(email, password);
 
     if (!user || user.length <= 0) {
-      return res.status(401).json({
-        status: "error",
-        message: "Usuário ou senha estão incorretos!",
-      });
+      throw HttpResponse.unauthorized("Usuário ou senha estão incorretos!");
     }
 
     const resultUser = {
@@ -63,10 +59,7 @@ const login = async (req, res) => {
 
     res.status(200).json(result);
   } catch (error) {
-    console.error(error?.message);
-    res
-      .status(500)
-      .json({ status: "error", message: "Internal server error!" });
+    next(error);
   }
 };
 
@@ -90,7 +83,7 @@ const createNewAcessAndRefreshToken = async (refreshToken, user) => {
     };
 
     // Pode dar esse erro "jwt expired" caso não seja a Lógica 2
-    const decode = jwt.verify(refreshToken, process.env.JWT_SECRET);
+    const decode = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
     if (!decode) {
       // throw new Error("Token inválido ou expirado");
