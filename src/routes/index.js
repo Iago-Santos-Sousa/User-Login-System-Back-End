@@ -16,9 +16,4 @@ router.use("/refresh-token", refreshTokenRouter);
 // Rota de usuários
 router.use("/users", usersRouter);
 
-// Rota de teste de autenticação
-router.get("/teste", async (req, res) => {
-  res.status(200).json({ message: "Está autenticado!" });
-});
-
 module.exports = router;

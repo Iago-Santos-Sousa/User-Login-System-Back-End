@@ -1,6 +1,5 @@
 const jwt = require("jsonwebtoken");
 const UserModel = require("../models/Users");
-// const moment = require("moment");
 
 const generateAcessToken = (payload) => {
   const acessToken = jwt.sign(payload, process.env.JWT_SECRET, {
@@ -24,12 +23,23 @@ const generateRefreshToken = async (payload) => {
   }
 };
 
-const login = async (email, password) => {
+const login = async (req, res) => {
   try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      res
+        .status(400)
+        .json({ status: "error", message: "Informe todas as credenciais!" });
+    }
+
     const user = await UserModel.getUserEmailAndPassword(email, password);
 
     if (!user || user.length <= 0) {
-      throw new Error("Credenciais inválidas!");
+      return res.status(401).json({
+        status: "error",
+        message: "Usuário ou senha estão incorretos!",
+      });
     }
 
     const resultUser = {
@@ -45,14 +55,18 @@ const login = async (email, password) => {
     const refreshToken = await generateRefreshToken(resultUser);
 
     // Retorna as credenciais do usuário e o acessToken e refreshToken formado
-    return {
+    const result = {
       user: resultUser,
       acessToken: acessToken,
       refreshToken: refreshToken,
     };
+
+    res.status(200).json(result);
   } catch (error) {
     console.error(error?.message);
-    throw error;
+    res
+      .status(500)
+      .json({ status: "error", message: "Internal server error!" });
   }
 };
 
