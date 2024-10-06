@@ -2,6 +2,7 @@ const { dbUser, withTransaction } = require("../db/dataBase");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const salt = bcrypt.genSaltSync(10);
+const HttpResponse = require("../utils/HttpResponse");
 
 const createUser = async (name, email, password) => {
   try {
@@ -191,7 +192,8 @@ const resetPassword = async (resetPasswordToken, password) => {
       findHashToken.length <= 0 ||
       !findHashToken[0]?.token
     ) {
-      throw new Error("Invalid password reset token!");
+      // throw new Error("Invalid password reset token!");
+      throw HttpResponse.notFound("Invalid password reset token!");
     }
 
     const userIdToken = findHashToken[0].user_id; // Token existe
@@ -215,7 +217,8 @@ const resetPassword = async (resetPasswordToken, password) => {
 
       if (matchedRow === null || matchedRow === undefined) {
         // O token foi resgatado por outra transação. Então saímos.
-        throw new Error("Invalid password reset token!");
+        // throw new Error("Invalid password reset token!");
+        throw HttpResponse.notFound("Invalid password reset token!");
       }
 
       // Agora vamos deletar todos os tokens pertencentes a este usuário para evitar uso duplicado.
@@ -229,7 +232,8 @@ const resetPassword = async (resetPasswordToken, password) => {
       const expirationTime = currentTime - matchedRow.token_expiry.getTime();
 
       if (expirationTime >= tenMinutesInMillis) {
-        throw new Error("Token expired!");
+        // throw new Error("Token expired!");
+        throw HttpResponse.gone("Token expired!");
       }
 
       // Agora todas as verificações foram concluídas. Podemos alterar a senha do usuário.

@@ -17,6 +17,10 @@ class HttpResponse {
     return new HttpResponse(400, message);
   }
 
+  static notFound(message) {
+    return new HttpResponse(404, message);
+  }
+
   static unauthorized(message) {
     return new HttpResponse(401, message);
   }
@@ -27,6 +31,10 @@ class HttpResponse {
 
   static notAcceptable(message) {
     return new HttpResponse(406, message);
+  }
+
+  static gone(message) {
+    return new HttpResponse(410, message);
   }
 
   static success(data, message = "Success") {

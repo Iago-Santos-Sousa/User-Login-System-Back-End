@@ -99,19 +99,6 @@ const resetPassword = async (req, res) => {
       .status(200)
       .json({ status: "success", message: "Senha alterada com sucesso." });
   } catch (error) {
-    if (error?.message === "Invalid password reset token!") {
-      return res.status(406).json({
-        status: "error",
-        message: "Token de redefinição de senha inválido!",
-      });
-    }
-
-    if (error?.message === "Token expired!") {
-      return res
-        .status(410)
-        .json({ status: "error", message: "O token expirou." });
-    }
-
     next(error);
   }
 };
