@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 
 // Lista de endpoint sem autenticação
 const unsecuredRoutes = [
-  "/login",
+  "/sign",
   "/signup",
   "/check-user",
   "/forgot-password",
