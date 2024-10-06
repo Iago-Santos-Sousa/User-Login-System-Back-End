@@ -8,7 +8,7 @@ const authenticateToken = require("../middlewares/authentication");
 router.use(authenticateToken);
 
 // Rota de login
-router.use("/login", loginRouter);
+router.use("/sign", loginRouter);
 
 // Rota de refreshToken
 router.use("/refresh-token", refreshTokenRouter);
@@ -20,7 +20,5 @@ router.use("/users", usersRouter);
 router.get("/teste", async (req, res) => {
   res.status(200).json({ message: "Está autenticado!" });
 });
-
-
 
 module.exports = router;

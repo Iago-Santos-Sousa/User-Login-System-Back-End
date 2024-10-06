@@ -128,25 +128,6 @@ router.post("/reset-password", async (req, res) => {
 });
 
 // Testar refresh token
-// router.get("/check-user", (req, res) => {
-//   const authHeader = req.headers["authorization"];
-//   const token = authHeader && authHeader.split(" ")[1];
-
-//   if (!token) {
-//     return res.status(401).json({ message: "Token is required!" });
-//   }
-
-//   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-//     if (err) {
-//       console.log("Token is invalid!");
-//       return res.status(401).json({ message: "Invalid token!" });
-//     }
-
-//     res.status(200).json({ message: "Token is valid." });
-//   });
-// });
-
-// Testar refresh token
 router.get("/get-user/:email", (req, res) => {
   const email = req.params;
   res.status(200).json(req.user);

@@ -8,7 +8,9 @@ router.post("/", async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      res.status(400).json({ message: "Informe todas as credenciais!" });
+      res
+        .status(400)
+        .json({ status: "error", message: "Informe todas as credenciais!" });
     }
 
     const result = await loginService.login(email, password);
