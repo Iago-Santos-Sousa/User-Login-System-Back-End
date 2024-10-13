@@ -7,7 +7,6 @@ const dbUser = mysql.createPool({
   port: process.env.DB_PORT || 3306,
   password: process.env.DB_PASS || "123@Iago",
   database: process.env.DB_SCHEMA || "users",
-  debug: false,
 });
 
 //Função que executa SQL em uma transação
