@@ -9,7 +9,7 @@ router.post("/", async (req, res) => {
     if (!refreshToken) {
       return res
         .status(403)
-        .json({ status: "error", message: "Token não fornecido" });
+        .json({ status: "error", message: "Token not provided" });
     }
 
     // Pega o usuário pelo refreshToken
@@ -18,7 +18,7 @@ router.post("/", async (req, res) => {
     if (!user || user.length <= 0) {
       return res
         .status(403)
-        .json({ status: "error", message: "Token inválido" });
+        .json({ status: "error", message: "Invalid token" });
     }
 
     const { newAcessToken, newRefreshToken } =
@@ -41,12 +41,12 @@ router.post("/", async (req, res) => {
     if (error?.message === "Token inválido ou expirado") {
       return res
         .status(403)
-        .json({ status: "error", message: "Token inválido ou expirado" });
+        .json({ status: "error", message: "Invalid or expired token" });
     }
 
     res
       .status(500)
-      .json({ status: "error", message: "Erro ao criar um novo token!" });
+      .json({ status: "error", message: "Internal server error!" });
   }
 });
 

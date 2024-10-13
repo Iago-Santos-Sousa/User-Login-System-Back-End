@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const UserModel = require("../models/Users");
-const HttpResponse = require("../utils/HttpResponse");
+const HttpResponseError = require("../utils/HttpResponseError");
 
 const generateAcessToken = (payload) => {
   const acessToken = jwt.sign(payload, process.env.JWT_SECRET, {
@@ -24,18 +24,14 @@ const generateRefreshToken = async (payload) => {
   }
 };
 
-const login = async (req, res, next) => {
+const login = async (email, password) => {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      throw HttpResponse.badRequest("Informe todas as credenciais!");
-    }
-
     const user = await UserModel.getUserEmailAndPassword(email, password);
 
     if (!user || user.length <= 0) {
-      throw HttpResponse.unauthorized("Usuário ou senha estão incorretos!");
+      throw new HttpResponseError.UnauthorizedError(
+        "Username or password is incorrect!"
+      );
     }
 
     const resultUser = {
@@ -57,9 +53,9 @@ const login = async (req, res, next) => {
       refreshToken: refreshToken,
     };
 
-    res.status(200).json(result);
+    return result;
   } catch (error) {
-    next(error);
+    throw error;
   }
 };
 

@@ -8,7 +8,7 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: false }));
 const corsOptions = {
-  origin: "*", // "http://localhost:3000"
+  origin: "*",
 };
 
 app.use(cors(corsOptions));

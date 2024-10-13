@@ -1,51 +1,30 @@
 const UserModel = require("../models/Users");
-const sendMail = require("../utils/sendEmail");
-const HttpResponse = require("../utils/HttpResponse");
+const HttpResponseError = require("../utils/HttpResponseError");
 
-const createUser = async (req, res, next) => {
+const createUser = async (name, email, password) => {
   try {
-    const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-      throw HttpResponse.badRequest(
-        "Informe todas as credenciais para criar usuário."
-      );
-    }
-
     const existUser = await UserModel.findUser(email);
 
     if (existUser && existUser.length > 0) {
-      throw HttpResponse.existResource("Já existe usuário com esse email!");
+      throw new HttpResponseError.ExistResourceError(
+        "There is already a user with this email!"
+      );
     }
 
     const userId = await UserModel.createUser(name, email, password);
 
-    if (!userId) {
-      throw HttpResponse.notAcceptable("Não foi possível criar usuário!");
-    }
-
-    res
-      .status(201)
-      .json({ status: "success", message: "Usuário criado com sucesso!" });
+    return userId;
   } catch (error) {
-    next(error);
+    throw error;
   }
 };
 
-const forgotPasswordEmail = async (req, res, next) => {
+const forgotPasswordEmail = async (email) => {
   try {
-    const { email } = req.body;
-
-    if (!email) {
-      throw HttpResponse.badRequest(
-        "Informe o seu email para redefinir sua senha."
-      );
-    }
-
     const user = await UserModel.getUserByEmail(email);
 
     if (user && user.length <= 0) {
-      throw HttpResponse.badRequest("Este email não é válido!");
+      throw HttpResponseError.NotFoundError("This email is not valid!");
     }
 
     const token = await UserModel.getResetTokenByUserId(user[0].user_id);
@@ -66,40 +45,22 @@ const forgotPasswordEmail = async (req, res, next) => {
       email: email,
     };
 
-    await sendMail(userData, linkResetPassword, res);
+    return { userData, linkResetPassword };
   } catch (error) {
-    next(error);
+    throw error;
   }
 };
 
-const resetPassword = async (req, res) => {
+const resetPassword = async (resetPasswordToken, password) => {
   try {
-    const { resetPasswordToken, password } = req.body;
-
-    if (!resetPasswordToken) {
-      throw HttpResponse.badRequest(
-        "Token de redefinição de senha não informado!"
-      );
-    }
-
-    if (!password) {
-      throw HttpResponse.badRequest("Informe a nova senha!");
-    }
-
     const updatedPasswordUser = await UserModel.resetPassword(
       resetPasswordToken,
       password
     );
 
-    if (!updatedPasswordUser) {
-      throw HttpResponse.notAcceptable("Não foi possível alterar a senha!");
-    }
-
-    res
-      .status(200)
-      .json({ status: "success", message: "Senha alterada com sucesso." });
+    return updatedPasswordUser;
   } catch (error) {
-    next(error);
+    throw error;
   }
 };
 

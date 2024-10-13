@@ -77,8 +77,8 @@ const getUserEmailAndPassword = async (email, password) => {
     const params = [email];
     const [results] = await dbUser.query(query, params);
 
-    if (!results || results.length <= 0) {
-      throw new Error("Usuário inválido!");
+    if (!results || results.length === 0) {
+      return null;
     }
 
     // Faz a comparação da senha do usuário com o hash do bcrypt

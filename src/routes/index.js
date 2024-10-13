@@ -17,6 +17,6 @@ router.use("/users", usersRouter);
 // Rota de refreshToken
 router.use("/refresh-token", refreshTokenRouter);
 
-router.use(errorHandler);
+// router.use(errorHandler);
 
 module.exports = router;
