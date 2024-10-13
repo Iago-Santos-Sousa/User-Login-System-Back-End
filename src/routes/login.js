@@ -11,7 +11,7 @@ router.post("/", async (req, res) => {
     }
 
     const userData = await loginService.login(email, password);
-    res.status(200).message(userData);
+    res.status(200).json(userData);
   } catch (error) {
     res.status(error.statusCode || 500).json({
       status: "error",
