@@ -23,7 +23,7 @@ router.post("/signup", async (req, res) => {
   } catch (error) {
     res.status(error.statusCode || 500).json({
       status: "error",
-      message: error.message || "Internal server error.",
+      message: error.messageResponse || "Internal server error.",
     });
   }
 });
@@ -43,7 +43,7 @@ router.post("/forgot-password", async (req, res) => {
   } catch (error) {
     res.status(error.statusCode || 500).json({
       status: "error",
-      message: error.message || "Internal server error.",
+      message: error.messageResponse || "Internal server error.",
     });
   }
 });
@@ -73,7 +73,7 @@ router.post("/reset-password", async (req, res) => {
   } catch (error) {
     res.status(error.statusCode || 500).json({
       status: "error",
-      message: error.message || "Internal server error.",
+      message: error.messageResponse || "Internal server error.",
     });
   }
 });
