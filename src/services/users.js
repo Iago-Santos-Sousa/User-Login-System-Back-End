@@ -1,9 +1,11 @@
 const UserModel = require("../models/Users");
 const HttpResponseError = require("../utils/HttpResponseError");
 const someUtils = require("../utils/someUtils");
+const { dbUser, withTransaction } = require("../db/dataBase");
 
 const createUser = async (name, email, password) => {
   try {
+    let userId = null;
     name = name.trim();
     email = email.trim().toLowerCase();
     password = password.trim();
@@ -15,14 +17,23 @@ const createUser = async (name, email, password) => {
       );
     }
 
-    const userId = await UserModel.createUser(name, email, password);
+    await withTransaction(dbUser, async (connection) => {
+      const resultId = await UserModel.createUser(
+        connection,
+        name,
+        email,
+        password
+      );
 
-    if (!userId) {
-      throw new HttpResponseError.NotAcceptableError("Unable to create user!");
-    }
+      const userHashId = someUtils.generateUserHashId(userId);
+      const updateResult = await UserModel.updateHashUserId(
+        connection,
+        userHashId,
+        resultId
+      );
 
-    const userHashId = someUtils.generateUserHashId(userId);
-    await UserModel.updateHashUserId(userHashId, userId);
+      userId = resultId;
+    });
 
     return userId;
   } catch (error) {

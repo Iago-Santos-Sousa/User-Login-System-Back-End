@@ -29,7 +29,10 @@ const singUpController = async (req, res) => {
       );
     }
 
-    await userService.createUser(name, email, password);
+    const result = await userService.createUser(name, email, password);
+    if (!result) {
+      throw new HttpResponseError.NotAcceptableError("Unable to create user!");
+    }
 
     res
       .status(201)

@@ -4,12 +4,12 @@ const crypto = require("crypto");
 const salt = bcrypt.genSaltSync(10);
 const HttpResponse = require("../utils/HttpResponse");
 
-const createUser = async (name, email, password) => {
+const createUser = async (connection, name, email, password) => {
   try {
     const hashPassword = bcrypt.hashSync(password, salt);
     const query = `INSERT INTO users.user (name, email, password) VALUES (?, ?, ?)`;
     const params = [name, email, hashPassword];
-    const [user] = await dbUser.query(query, params);
+    const [user] = await connection.query(query, params);
     return user.insertId ?? null;
   } catch (error) {
     console.error(error);
@@ -29,11 +29,11 @@ const getUserById = async (user_id) => {
   }
 };
 
-const updateHashUserId = async (userHashId, userId) => {
+const updateHashUserId = async (connection, userHashId, userId) => {
   try {
     const query = `UPDATE users.user SET user_hash_id = ? WHERE user_id = ?`;
     const params = [userHashId, userId];
-    const [user] = await dbUser.query(query, params);
+    const [user] = await connection.query(query, params);
     return user.affectedRows ?? null;
   } catch (error) {
     console.error(error);
