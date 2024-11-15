@@ -31,9 +31,10 @@ const resetPasswordController = async (req, res) => {
     );
 
     if (!result) {
-      throw new HttpResponseError.NotAcceptableError(
-        "Unable to restore your password!"
-      );
+      return res.status(406).json({
+        status: "error",
+        message: "Unable to restore your password!",
+      });
     }
 
     res
@@ -52,7 +53,10 @@ const refreshTokenController = async (req, res) => {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
-      throw new HttpResponseError.ForbiddenError("Token not provided!");
+      return res.status(403).json({
+        status: "error",
+        message: "Token not provided!",
+      });
     }
 
     const { newAccessToken, newRefreshToken } =

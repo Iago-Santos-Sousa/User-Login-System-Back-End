@@ -5,12 +5,16 @@ const logOutController = async (req, res) => {
   try {
     const { userId } = req.user;
     if (!userId) {
-      throw new HttpResponseError.BadRequestError("user_id is required!");
+      return res
+        .status(400)
+        .json({ status: "error", message: "user_id is required!" });
     }
 
     const result = await loginService.logOut(userId);
     if (!result) {
-      throw new HttpResponseError.NotAcceptableError("Unable to log out!");
+      return res
+        .status(406)
+        .json({ status: "error", message: "Unable to log out!" });
     }
 
     res.status(200).json({ status: "success", message: "logout completed" });

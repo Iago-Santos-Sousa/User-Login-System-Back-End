@@ -5,10 +5,12 @@ const loginController = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      throw new HttpResponseError.BadRequestError(
-        "Email and password is required!"
-      );
+      return res.status(400).json({
+        status: "error",
+        message: "Email and password is required!",
+      });
     }
+
     const userData = await loginService.login(email, password);
     res.status(200).json(userData);
   } catch (error) {

@@ -6,7 +6,9 @@ const getUserController = async (req, res) => {
     const { user_id } = req.params;
 
     if (!user_id) {
-      throw new HttpResponseError.BadRequestError("user_id is required.");
+      return res
+        .status(400)
+        .json({ status: "error", message: "user_id is required." });
     }
 
     const result = await userService.getUser(user_id);
@@ -24,14 +26,18 @@ const singUpController = async (req, res) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      throw new HttpResponseError.BadRequestError(
-        "Name, email and password is required."
-      );
+      return res.status(400).json({
+        status: "error",
+        message: "Name, email and password is required.",
+      });
     }
 
     const result = await userService.createUser(name, email, password);
     if (!result) {
-      throw new HttpResponseError.NotAcceptableError("Unable to create user!");
+      return res.status(406).json({
+        status: "error",
+        message: "Unable to create user!",
+      });
     }
 
     res
