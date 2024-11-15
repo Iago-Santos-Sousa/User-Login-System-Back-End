@@ -4,12 +4,12 @@ const nodemailer = require("nodemailer");
 const sendMail = async (userData, linkResetPassword, res) => {
   try {
     let smtpConfig = {
-      host: "smtp.gmail.com",
-      port: 465,
+      host: process.env.AUTH_EMAIL_HOST || "smtp.gmail.com",
+      port: process.env.AUTH_EMAIL_PORT || 465,
       secure: true,
       auth: {
-        user: "iago.santos.sousa@gmail.com",
-        pass: "hmiu yxlu skjf hgen",
+        user: process.env.AUTH_EMAIL_USER,
+        pass: process.env.AUTH_EMAIL_PASS,
       },
       tls: {
         rejectUnauthorized: false,
