@@ -62,6 +62,15 @@ const login = async (email, password) => {
   }
 };
 
+const logOut = async (userId) => {
+  try {
+    const result = await UserModel.deleteRefreshTokenByUserId(userId);
+    return result;
+  } catch (error) {
+    throw error;
+  }
+};
+
 const createNewAcessAndRefreshToken = async (refreshToken) => {
   let user = [];
   try {
@@ -135,4 +144,5 @@ module.exports = {
   generateAcessToken,
   generateRefreshToken,
   createNewAcessAndRefreshToken,
+  logOut,
 };

@@ -3,13 +3,10 @@ const userService = require("../services/users");
 const loginService = require("../services/login");
 const HttpResponseError = require("../utils/HttpResponseError");
 
+// Service que cria o token de resetar a senha do usuário e o envia para o E-mail
 const forgotPasswordController = async (req, res) => {
   try {
     const { email } = req.body;
-
-    if (!email) {
-      throw new HttpResponseError.BadRequestError("email is required!");
-    }
 
     const { userData, linkResetPassword } =
       await userService.forgotPasswordEmail(email);
@@ -23,15 +20,10 @@ const forgotPasswordController = async (req, res) => {
   }
 };
 
+// Restaura a senha do usuário pelo hash gerado e adicionado ao link do email
 const resetPasswordController = async (req, res) => {
   try {
     const { resetPasswordToken, password } = req.body;
-
-    if (!resetPasswordToken || !password) {
-      throw new HttpResponseError.BadRequestError(
-        "Reset password token and new password is required!"
-      );
-    }
 
     const result = await userService.resetPassword(
       resetPasswordToken,
@@ -40,7 +32,7 @@ const resetPasswordController = async (req, res) => {
 
     if (!result) {
       throw new HttpResponseError.NotAcceptableError(
-        "Unable to change password!"
+        "Unable to restore your password!"
       );
     }
 

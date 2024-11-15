@@ -92,7 +92,7 @@ const getUserByEmail = async (email) => {
   try {
     const queryString = `SELECT user_id, name, email FROM users.user WHERE email = ?`;
     const [emailUser] = await dbUser.query(queryString, [email]);
-    return emailUser;
+    return emailUser[0] ?? null;
   } catch (error) {
     console.error(error);
     return null;
@@ -101,9 +101,9 @@ const getUserByEmail = async (email) => {
 
 const getResetTokenByUserId = async (userId) => {
   try {
-    const queryString = `SELECT user_id, token, token_expiry FROM users.reset_tokens WHERE user_id = ?`;
+    const queryString = `SELECT user_id, token_password, token_password_expiry FROM users.user WHERE user_id = ?`;
     const [resetToken] = await dbUser.query(queryString, [userId]);
-    return resetToken;
+    return resetToken[0] ?? null;
   } catch (error) {
     console.error(error);
     return null;
@@ -112,9 +112,9 @@ const getResetTokenByUserId = async (userId) => {
 
 const getResetTokenByHashToken = async (hashToken) => {
   try {
-    const queryString = `SELECT user_id, token, token_expiry FROM users.reset_tokens WHERE token = ?`;
+    const queryString = `SELECT user_id, token_password, token_password_expiry FROM users.user WHERE token_password = ?`;
     const [resetToken] = await dbUser.query(queryString, [hashToken]);
-    return resetToken;
+    return resetToken ?? null;
   } catch (error) {
     console.error(error);
     return null;
@@ -123,9 +123,20 @@ const getResetTokenByHashToken = async (hashToken) => {
 
 const deleteResetTokenByUserId = async (userId) => {
   try {
-    const queryString = `DELETE FROM users.reset_tokens WHERE user_id = ?`;
-    const [resetToken] = await dbUser.query(queryString, [userId]);
-    return resetToken;
+    const queryString = `UPDATE users.user SET token_password_expiry = ?, token_password = ? WHERE user_id = ?`;
+    const [resetToken] = await dbUser.query(queryString, [null, null, userId]);
+    return resetToken.affectedRows ?? null;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+const deleteRefreshTokenByUserId = async (userId) => {
+  try {
+    const queryString = `UPDATE users.user SET refresh_token = ? WHERE user_id = ?`;
+    const [resetToken] = await dbUser.query(queryString, [null, userId]);
+    return resetToken.affectedRows ?? null;
   } catch (error) {
     console.error(error);
     throw error;
@@ -134,10 +145,10 @@ const deleteResetTokenByUserId = async (userId) => {
 
 const insertResetToken = async (userId, hashToken) => {
   try {
-    const queryString = `INSERT INTO users.reset_tokens (user_id, token) VALUES (?, ?)`;
-    const queryParams = [userId, hashToken];
+    const queryString = `UPDATE users.user SET token_password = ?, token_password_expiry = ? WHERE user_id = ?`;
+    const queryParams = [hashToken, new Date(), userId];
     const [resetToken] = await dbUser.query(queryString, queryParams);
-    return resetToken;
+    return resetToken.affectedRows ?? null;
   } catch (error) {
     console.error(error);
     throw error;
@@ -146,24 +157,24 @@ const insertResetToken = async (userId, hashToken) => {
 
 const getAllRowsTokensUser = async (userId) => {
   try {
-    const queryString = `SELECT user_id, token, token_expiry FROM users.reset_tokens WHERE user_id = ? FOR UPDATE`;
+    const queryString = `SELECT user_id, token_password, token_password_expiry FROM users.user WHERE user_id = ? FOR UPDATE`;
     const [tokens] = await dbUser.query(queryString, [userId]);
     return tokens;
   } catch (error) {
     console.error(error);
-    return null;
+    throw error;
   }
 };
 
 const createUserResetToken = async () => {
   try {
-    let resetToken = crypto.randomBytes(64).toString("hex");
+    let resetTokenLink = crypto.randomBytes(64).toString("hex");
     const hashToken = crypto
       .createHash("sha256")
-      .update(resetToken)
+      .update(resetTokenLink)
       .digest("hex");
 
-    return { resetToken: resetToken, hashToken: hashToken };
+    return { resetTokenLink: resetTokenLink, hashTokenDb: hashToken };
   } catch (error) {
     console.error(error);
     throw error;
@@ -180,12 +191,7 @@ const resetPassword = async (resetPasswordToken, password) => {
       .digest("hex");
     const findHashToken = await getResetTokenByHashToken(hashToken);
 
-    if (
-      !findHashToken ||
-      findHashToken.length <= 0 ||
-      !findHashToken[0]?.token
-    ) {
-      // throw new Error("Invalid password reset token!");
+    if (!findHashToken || findHashToken.length === 0) {
       throw HttpResponse.notFound("Invalid password reset token!");
     }
 
@@ -203,29 +209,28 @@ const resetPassword = async (resetPasswordToken, password) => {
       let matchedRow = null;
 
       for (const token of allUserTokens) {
-        if (token.token === hashToken) {
+        if (token.token_password === hashToken) {
           matchedRow = token;
         }
       }
 
       if (matchedRow === null || matchedRow === undefined) {
         // O token foi resgatado por outra transação. Então saímos.
-        // throw new Error("Invalid password reset token!");
         throw HttpResponse.notFound("Invalid password reset token!");
       }
 
       // Agora vamos deletar todos os tokens pertencentes a este usuário para evitar uso duplicado.
-      const queryStringDelete = `DELETE FROM users.reset_tokens WHERE user_id = ?`;
-      const deleteParams = [userIdToken];
+      const queryStringDelete = `UPDATE users.user SET token_password_expiry = ?, token_password = ? WHERE user_id = ?`;
+      const deleteParams = [null, null, userIdToken];
       await connection.query(queryStringDelete, deleteParams);
 
       // Agora verificamos se o token atual expirou ou não.
       const currentTime = Date.now();
       const tenMinutesInMillis = 15 * 60 * 1000; // 15 minutos em milissegundos
-      const expirationTime = currentTime - matchedRow.token_expiry.getTime();
+      const expirationTime =
+        currentTime - matchedRow.token_password_expiry.getTime();
 
       if (expirationTime >= tenMinutesInMillis) {
-        // throw new Error("Token expired!");
         throw HttpResponse.gone("Token expired!");
       }
 
@@ -238,7 +243,7 @@ const resetPassword = async (resetPasswordToken, password) => {
         updateParams
       );
 
-      result = updatedPasswordUser.changedRows;
+      result = updatedPasswordUser.affectedRows;
     });
 
     return result;
@@ -263,4 +268,5 @@ module.exports = {
   getRefreshToken,
   getUserById,
   updateHashUserId,
+  deleteRefreshTokenByUserId,
 };

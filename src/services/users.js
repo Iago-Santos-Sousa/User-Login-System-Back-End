@@ -11,7 +11,7 @@ const createUser = async (name, email, password) => {
     password = password.trim();
     const existUserEmail = await UserModel.getUserByEmail(email);
 
-    if (existUserEmail.length > 0) {
+    if (existUserEmail) {
       throw new HttpResponseError.ExistResourceError(
         "There is already a user with this email!"
       );
@@ -64,26 +64,45 @@ const getUser = async (user_id) => {
 const forgotPasswordEmail = async (email) => {
   try {
     email = email.trim().toLowerCase();
+    if (!email) {
+      throw new HttpResponseError.BadRequestError("email is required!");
+    }
+
     const user = await UserModel.getUserByEmail(email);
 
-    if (user.length === 0) {
-      throw HttpResponseError.NotFoundError("This email is not valid!");
+    if (!user) {
+      throw new HttpResponseError.NotFoundError("This email is not valid!");
     }
 
-    const token = await UserModel.getResetTokenByUserId(user[0].user_id);
-
-    if (token.length > 0) {
-      await UserModel.deleteResetTokenByUserId(user[0].user_id);
-    }
-
-    const { resetToken, hashToken } = await UserModel.createUserResetToken();
-
-    const resultResetToken = await UserModel.insertResetToken(
-      user[0].user_id,
-      hashToken
+    const resetPasswordToken = await UserModel.getResetTokenByUserId(
+      user.user_id
     );
 
-    const linkResetPassword = `http://localhost:${5173}/reset-password/${resetToken}`;
+    if (resetPasswordToken.token_password) {
+      await UserModel.deleteResetTokenByUserId(user.user_id);
+    }
+
+    const { resetTokenLink, hashTokenDb } =
+      await UserModel.createUserResetToken();
+
+    if (!resetTokenLink || !hashTokenDb) {
+      throw new HttpResponseError.NotAcceptableError(
+        "It was not possible to generate a link to restore the password!"
+      );
+    }
+
+    const resultResetToken = await UserModel.insertResetToken(
+      user.user_id,
+      hashTokenDb
+    );
+
+    if (!resultResetToken) {
+      throw new HttpResponseError.NotAcceptableError(
+        "It was not possible to generate a link to restore the password!"
+      );
+    }
+
+    const linkResetPassword = `http://localhost:${5173}/reset-password/${resetTokenLink}`;
 
     const userData = {
       email: email,
@@ -97,8 +116,14 @@ const forgotPasswordEmail = async (email) => {
 
 const resetPassword = async (resetPasswordToken, password) => {
   try {
-    resetPasswordToken = resetPassword.trim();
+    resetPasswordToken = resetPasswordToken.trim();
     password = password.trim();
+
+    if (!resetPasswordToken || !password) {
+      throw new HttpResponseError.BadRequestError(
+        "Reset password token and new password is required!"
+      );
+    }
 
     const updatedPasswordUser = await UserModel.resetPassword(
       resetPasswordToken,

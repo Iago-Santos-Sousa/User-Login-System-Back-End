@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const loginRouter = require("./login");
+const logOutRouter = require("./logOut");
 const refreshTokenRouter = require("./refreshToken");
 const usersRouter = require("./users");
 const authenticateToken = require("../middlewares/authentication");
@@ -10,6 +11,9 @@ router.use(authenticateToken);
 
 // Rota de login
 router.use("/sign", loginRouter);
+
+// Rota de log-out
+router.use("/log-out", logOutRouter);
 
 // Rota de usuários
 router.use("/users", usersRouter);
