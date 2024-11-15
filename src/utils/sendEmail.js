@@ -18,17 +18,8 @@ const sendMail = async (userData, linkResetPassword, res) => {
 
     const transporter = nodemailer.createTransport(smtpConfig);
 
-    // const transporter = nodemailer.createTransport({
-    //   // Opção com gmail
-    //   service: "gmail",
-    //   auth: {
-    //     user: "iago.santos.sousa@gmail.com",
-    //     pass: "hmiu yxlu skjf hgen",
-    //   },
-    // });
-
     const mailOptions = {
-      from: "iago.santos.sousa@gmail.com",
+      from: process.env.AUTH_EMAIL_USER,
       to: userData.email,
       subject: "reset password",
       text: linkResetPassword,
